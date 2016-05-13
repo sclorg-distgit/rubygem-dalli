@@ -4,11 +4,11 @@
 %global gem_name dalli
 
 # Depends on Rails and its needed by Rails
-%global enable_test 0
+%global enable_test 1
 
 Name: %{?scl_prefix}rubygem-%{gem_name}
 Version: 2.7.4
-Release: 4%{?dist}
+Release: 5%{?dist}
 Summary: High performance memcached client for Ruby
 Group: Development/Languages
 License: MIT
@@ -64,15 +64,16 @@ cp -pa .%{gem_dir}/* \
 
 %check
 %if 0%{enable_test} > 0
+%{?scl:scl enable %{scl} - << \EOF}
+set -e
 pushd .%{gem_instdir}
 # connection_pool is not yet in Fedora
 sed -i -e '3d' test/test_active_support.rb
 sed -i -e '491,506d' test/test_active_support.rb
 
-%{?scl:scl enable %{scl} - << \EOF}
-ruby -Ilib:test -e "Dir.glob('./test/test_*.rb'), &method(:require)"
-%{?scl:EOF}
+ruby -Ilib:test -e 'Dir.glob "./test/*_test.rb", &method(:require)'
 popd
+%{?scl:EOF}
 %endif
 
 %files
@@ -93,6 +94,9 @@ popd
 %{gem_instdir}/test
 
 %changelog
+* Thu Apr 07 2016 Pavel Valena <pvalena@redhat.com> - 2.7.4-5
+- Enable tests
+
 * Sat Feb 20 2016 Pavel Valena <pvalena@redhat.com> - 2.7.4-4
 - Add scl macros
 
